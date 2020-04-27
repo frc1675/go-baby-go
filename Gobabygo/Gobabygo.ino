@@ -7,7 +7,7 @@ const float deadzone = 0.1;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 
-int joyXVal = 0;
+float joyXVal = 0;
 float scaledJoyXVal = 0.0;
 // int joyYVal = 0;
 // float scaledJoyYVal = 0.0;
@@ -48,10 +48,10 @@ void loop() {
   // }
   // else {
   //   if (scaledJoyYVal > deadzone) {
-  //     scaledJoyYVal = (scaledJoyYVal-1)/deadzone - 1;
+  //     scaledJoyYVal = (scaledJoyYVal - 1)/(1 - deadzone) - 1;
   //   }
   //   else {
-  //     scaledJoyYVal = (scaledJoyYVal+1)/deadzone - 1;
+  //     scaledJoyYVal = (scaledJoyYVal + 1)/(1 - deadzone) - 1;
   //   }
   // }
 
