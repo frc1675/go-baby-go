@@ -11,9 +11,6 @@ float joyXVal;
 float scaledJoyXVal;
 int joyYVal;
 float scaledJoyYVal;
-float rightMotorVal;
-float leftMotorVal;
-float scaler;
 
 // This function will scale a value between -1 and 1 according to a deadzone:
 void correctForDeadzone(float axis, float deadzone) {
@@ -39,6 +36,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  float rightMotorVal;
+  float leftMotorVal;
+  float scaler;
+  
   joyXVal = analogRead(joyStickXPin);
   scaledJoyXVal = joyXVal/1023*2 - 1;
   correctForDeadzone(scaledJoyXVal, deadzone);
@@ -59,7 +60,7 @@ void loop() {
     leftMotorVal = leftMotorVal / scaler;
     rightMotorVal = rightMotorVal / scaler;
   }
-
+  
   analogWrite(leftMotorPin, leftMotorVal * 127.5 + 127.5);    // converting from -1-1 to 0-255
   analogWrite(rightMotorPin, rightMotorVal * 127.5 + 127.5);
   
