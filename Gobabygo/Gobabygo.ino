@@ -7,11 +7,6 @@ const float deadzone = 0.1;
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 
-float joyXVal;
-float scaledJoyXVal;
-int joyYVal;
-float scaledJoyYVal;
-
 // This function will scale a value between -1 and 1 according to a deadzone:
 void correctForDeadzone(float axis, float deadzone) {
   if (abs(axis) <= deadzone){
@@ -36,6 +31,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  float joyXVal;
+  float scaledJoyXVal;
+  int joyYVal;
+  float scaledJoyYVal;
+  
   float rightMotorVal;
   float leftMotorVal;
   float scaler;
