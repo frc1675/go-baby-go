@@ -53,6 +53,8 @@ void loop() {
   
   if (scaledJoyYVal < 0) {
     scaledJoyYVal *= backwardPower;
+  }
+  else (
     scaledJoyXVal -= scaledJoyYVal * turnScaler;
   }
 
