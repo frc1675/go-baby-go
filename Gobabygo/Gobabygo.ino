@@ -2,7 +2,6 @@ const int joyStickXPin (0);
 const int joyStickYPin (1);
 const int rightMotorPin (6);
 const int leftMotorPin (5);
-const float deadzone = 0.1;
 
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
@@ -40,17 +39,21 @@ void loop() {
   float leftMotorVal;
   float scaler;
 
+  const float deadzone = 0.1;
   const float backwardPower = 0.4;
+  const float turnScaler = 0.5;
   
   joyXVal = analogRead(joyStickXPin);
-  scaledJoyXVal = joyXVal/1023*2 - 1;
+  scaledJoyXVal = 2/1023 * joyXVal - 1;
   scaledJoyXVal = correctForDeadzone(scaledJoyXVal, deadzone);
   
   joyYVal = analogRead(joyStickYPin);
   scaledJoyYVal = 2/1023 * joyYVal -1;
   scaledJoyYVal = correctForDeadzone(scaledJoyYVal, deadzone);
+  
   if (scaledJoyYVal < 0) {
     scaledJoyYVal *= backwardPower;
+    scaledJoyXVal -= scaledJoyYVal * turnScaler;
   }
 
   // Cheesy drive logic
