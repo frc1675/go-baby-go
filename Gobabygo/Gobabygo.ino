@@ -6,20 +6,31 @@ const int leftMotorPin (5);
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
 
+float joyXVal = 0;
+float previousJoyXVal = 0;
+float joyYVal = 0;
+float previousJoyYVal = 0;
+
+
 // This function will scale a value between -1 and 1 according to a deadzone:
 float correctForDeadzone(float axis, float deadzone) {
   if (abs(axis) <= deadzone){
     return 0;
   }
+  else if (axis > deadzone){
+    return (axis - 1)/(1 - deadzone) + 1; // modified point-slope form of a line
+  }
   else {
-    if (axis > deadzone) {
-      return (axis - 1)/(1 - deadzone) + 1; // modified point-slope form of a line
-    }
-    else {
-      return (axis + 1)/(1 - deadzone) - 1;
-    }
+    return (axis + 1)/(1 - deadzone) - 1;
   }
 }
+
+
+// This funtion gradually accelerates a value toward a target
+float accelerateToValue(float currentVal, float targetVal, int timeElapsed, float acceleration) {
+  return currentVal + (targetVal - currentVal) * timeElapsed * acceleration;
+}
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -28,39 +39,47 @@ void setup() {
   pinMode(leftMotorPin, OUTPUT);
 }
 
+
 void loop() {
   // put your main code here, to run repeatedly:
-  int joyXVal;
-  float scaledJoyXVal;
-  int joyYVal;
-  float scaledJoyYVal;
-  
   float rightMotorVal;
   float leftMotorVal;
   float scaler;
 
+  int timeSincePrint;
+  int timeSinceAcceleration;
+
   const float deadzone = 0.1;
   const float backwardPower = 0.4;
   const float turnScaler = 0.5;
+  const float accelerationPerMs = 0.0005;
+
+  currentTime = millis();
+  timeSincePrint += currentTime - previousTime;
+  timeSinceAcceleration = currentTime - previousTime;
   
   joyXVal = analogRead(joyStickXPin);
-  scaledJoyXVal = 2/1023 * joyXVal - 1;
-  scaledJoyXVal = correctForDeadzone(scaledJoyXVal, deadzone);
+  joyXVal = 2/1023 * joyXVal - 1;
+  joyXVal = correctForDeadzone(joyXVal, deadzone);
+  joyXVal = accelerateToValue(joyXVal, previousJoyXVal, timeSinceAcceleration, accelerationPerMs);
+  previousJoyXVal = joyXVal;
   
   joyYVal = analogRead(joyStickYPin);
-  scaledJoyYVal = 2/1023 * joyYVal -1;
-  scaledJoyYVal = correctForDeadzone(scaledJoyYVal, deadzone);
+  joyYVal = 2/1023 * joyYVal -1;
+  joyYVal = correctForDeadzone(joyYVal, deadzone);
+  joyYVal = accelerateToValue(joyYVal, previousJoyYVal, timeSinceAcceleration, accelerationPerMs);
+  previousJoyYVal = joyYVal;
   
-  if (scaledJoyYVal < 0) {
-    scaledJoyYVal *= backwardPower;
+  if (joyYVal < 0) {
+    joyYVal *= backwardPower;
   }
-  else (
-    scaledJoyXVal -= scaledJoyYVal * turnScaler;
+  else {
+    joyXVal -= joyYVal * turnScaler;
   }
 
   // Cheesy drive logic
-  leftMotorVal = scaledJoyYVal + scaledJoyXVal;
-  rightMotorVal = scaledJoyYVal - scaledJoyXVal;
+  leftMotorVal = joyYVal + joyXVal;
+  rightMotorVal = joyYVal - joyXVal;
 
   if (abs(leftMotorVal) > 1 or abs(rightMotorVal) > 1) {  // the value of either motor can never be outside the range -1 to 1
     scaler = max(abs(leftMotorVal), abs(rightMotorVal));
@@ -73,14 +92,13 @@ void loop() {
   
 
   // "Loop" that happens twice every second; used for printing values
-  currentTime = millis();
-  if (currentTime - previousTime >= 500) {
-    previousTime = currentTime;
+  if (timeSincePrint >= 500) {
+    timeSincePrint = 0;
   
     Serial.print("X joystick value: ");
-    Serial.println(scaledJoyXVal);
+    Serial.println(joyXVal);
     Serial.print("Y joystick value: ");
-    Serial.println(scaledJoyYVal);
+    Serial.println(joyYVal);
     Serial.print("Left motor value: ");
     Serial.println(leftMotorVal);
     Serial.print("Right motor value: ");
