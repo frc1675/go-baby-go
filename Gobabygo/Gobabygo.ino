@@ -5,12 +5,23 @@ const int leftMotorPin (5);
 
 unsigned long currentTime = 0;
 unsigned long previousTime = 0;
+int timeSincePrint = 0;
 
 float joyXVal = 0;
 float previousJoyXVal = 0;
 float joyYVal = 0;
 float previousJoyYVal = 0;
 
+float rightMotorVal = 0;
+float leftMotorVal = 0;
+float scaler = 0;
+
+int timeSinceAcceleration = 0;
+
+const float deadzone = 0.1;
+const float backwardPower = 0.4;
+const float turnScaler = 0.5;
+const float accelerationPerMs = 0.0005;
 
 // This function will scale a value between -1 and 1 according to a deadzone:
 float correctForDeadzone(float axis, float deadzone) {
@@ -42,21 +53,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  float rightMotorVal;
-  float leftMotorVal;
-  float scaler;
-
-  int timeSincePrint;
-  int timeSinceAcceleration;
-
-  const float deadzone = 0.1;
-  const float backwardPower = 0.4;
-  const float turnScaler = 0.5;
-  const float accelerationPerMs = 0.0005;
-
   currentTime = millis();
   timeSincePrint += currentTime - previousTime;
   timeSinceAcceleration = currentTime - previousTime;
+  previousTime = currentTime;
   
   joyXVal = analogRead(joyStickXPin);
   joyXVal = 2/1023 * joyXVal - 1;
