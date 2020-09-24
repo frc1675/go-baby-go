@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 const int joyStickXPin (0);
 const int joyStickYPin (1);
 const int rightMotorPin (6);
@@ -14,7 +16,11 @@ float previousJoyYVal = 0;
 
 float rightMotorVal = 0;
 float leftMotorVal = 0;
+
 float scaler = 0;
+
+Servo leftMotorController;
+Servo rightMotorController;
 
 int timeSinceAcceleration = 0;
 const float deadzone = 0.1;
@@ -41,11 +47,21 @@ float accelerateToValue(float currentVal, float targetVal, int timeElapsed, floa
   return currentVal + (targetVal - currentVal) * timeElapsed * acceleration;
 }
 
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(joyStickXPin, INPUT);
+  pinMode(joyStickYPin, INPUT);
   pinMode(rightMotorPin, OUTPUT);
   pinMode(leftMotorPin, OUTPUT);
+
+  rightMotorController.attach(rightMotorPin);
+  rightMotorController.writeMicroseconds(1500);
+  leftMotorController.attach(leftMotorPin);
+  leftMotorController.writeMicroseconds(1500);
+  
+  delay(3000);
 }
 
 void loop() {
@@ -58,13 +74,13 @@ void loop() {
   float rawJoyXValue = analogRead(joyStickXPin);
   joyXVal = 2.0/1023.0 * analogRead(joyStickXPin) - 1;
   joyXVal = correctForDeadzone(joyXVal, deadzone);
-  joyXVal = accelerateToValue(joyXVal, previousJoyXVal, timeSinceAcceleration, accelerationPerMs);
+  // joyXVal = accelerateToValue(joyXVal, previousJoyXVal, timeSinceAcceleration, accelerationPerMs);
   previousJoyXVal = joyXVal;
   
   float rawJoyYValue = analogRead(joyStickYPin);
   joyYVal = 2.0/1023.0 * analogRead(joyStickYPin) -1;
   joyYVal = correctForDeadzone(joyYVal, deadzone);
-  joyYVal = accelerateToValue(joyYVal, previousJoyYVal, timeSinceAcceleration, accelerationPerMs);
+  // joyYVal = accelerateToValue(joyYVal, previousJoyYVal, timeSinceAcceleration, accelerationPerMs);
   previousJoyYVal = joyYVal;
   
   if (joyYVal < 0) {
@@ -81,15 +97,15 @@ void loop() {
     rightMotorVal = rightMotorVal / scaler;
   }
   
-  analogWrite(leftMotorPin, leftMotorVal * 127.5 + 127.5);    // converting from -1-1 to 0-255
-  analogWrite(rightMotorPin, rightMotorVal * 127.5 + 127.5);
+  leftMotorController.writeMicroseconds(int(leftMotorVal * 500 + 1500));    // converting from -1 - 1 to 1000 - 2000
+  rightMotorController.writeMicroseconds(int(rightMotorVal * 500 + 1500));
   
   // "Loop" used for printing values
   if (timeSincePrint >= 2000) {
     timeSincePrint = 0;
     Serial.print("raw X joystick value: ");
     Serial.println(rawJoyXValue);
-    Serial.print(" raw Y joystick value: ");
+    Serial.print("raw Y joystick value: ");
     Serial.println(rawJoyYValue);
     Serial.print("X joystick value: ");
     Serial.println(joyXVal);
