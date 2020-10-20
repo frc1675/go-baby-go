@@ -17,7 +17,6 @@ float scaler = 0;
 
 const float deadzone = 0.1;
 const float backwardPower = 0.4;
-const float turnScaler = 0.5;
 const int motorLoopTime = 10;
 const float accelerationPerMs = 0.002;
 
@@ -81,7 +80,7 @@ void loop() {
   
   if (timeSinceAcceleration >= motorLoopTime) {
     rawJoyXVal = analogRead(joyStickXPin);
-    targetJoyXVal = 2.0/1023.0 * analogRead(joyStickXPin) - 1;
+    targetJoyXVal = 2.0/1023.0 * rawJoyXVal - 1;
     targetJoyXVal = correctForDeadzone(targetJoyXVal, deadzone);
     if (targetJoyXVal < 0) {
       targetJoyXVal *= backwardPower;
@@ -89,7 +88,7 @@ void loop() {
     joyXVal = safeAcceleration(targetJoyXVal, joyXVal, motorLoopTime*accelerationPerMs);
     
     rawJoyYVal = analogRead(joyStickYPin);
-    targetJoyYVal = 2.0/1023.0 * analogRead(joyStickYPin) -1;
+    targetJoyYVal = 2.0/1023.0 * rawJoyYVal -1;
     targetJoyYVal = correctForDeadzone(targetJoyYVal, deadzone);
     joyYVal = safeAcceleration(targetJoyYVal, joyYVal, motorLoopTime*accelerationPerMs);
    
