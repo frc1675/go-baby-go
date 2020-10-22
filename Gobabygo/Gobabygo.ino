@@ -79,6 +79,7 @@ void loop() {
   previousTime = currentTime;
   
   if (timeSinceAcceleration >= motorLoopTime) {
+    timeSinceAcceleration = 0;
     rawJoyXVal = analogRead(joyStickXPin);
     targetJoyXVal = 2.0/1023.0 * rawJoyXVal - 1;
     targetJoyXVal = correctForDeadzone(targetJoyXVal, deadzone);
