@@ -6,7 +6,7 @@ const int rightMotorPin (6);
 const int leftMotorPin (5);
 
 unsigned long currentTime, previousTime = 0;
-int timeSincePrint, timeSinceAcceleration = 0;
+int timeSincePrint, timeSinceMotorUpdate = 0;
 
 int rawJoyXVal, rawJoyYVal = 0;
 float joyXVal, targetJoyXVal, joyYVal, targetJoyYVal = 0;
@@ -19,6 +19,7 @@ const float deadzone = 0.1;
 const float backwardPower = 0.4;
 const int motorLoopTime = 10;
 const float accelerationPerMs = 0.002;
+const float decelerationScaler = 2.0
 
 Servo leftMotorController;
 Servo rightMotorController;
@@ -41,6 +42,10 @@ float correctForDeadzone(float axis, float deadzone) {
 
 // This function will cap the car's acceleration
 float safeAcceleration(float targetVal, float currentVal, float maxAcceleration) {
+  if (abs(targetVal) - abs(currentVal) < 0) { //faster going toward 0 than away
+    maxAcceleration *= decelerationScaler;
+  }
+  
   if (abs(targetVal - currentVal) <= maxAcceleration){
     return targetVal;
   }
@@ -75,22 +80,22 @@ void loop() {
   // put your main code here, to run repeatedly:
   currentTime = millis();
   timeSincePrint += currentTime - previousTime;
-  timeSinceAcceleration += currentTime - previousTime;
+  timeSinceMotorUpdate += currentTime - previousTime;
   previousTime = currentTime;
   
-  if (timeSinceAcceleration >= motorLoopTime) {
-    timeSinceAcceleration = 0;
+  if (timeSinceMotorUpdate >= motorLoopTime) {
+    timeSinceMotorUpdate = 0;
     rawJoyXVal = analogRead(joyStickXPin);
     targetJoyXVal = 2.0/1023.0 * rawJoyXVal - 1;
     targetJoyXVal = correctForDeadzone(targetJoyXVal, deadzone);
-    if (targetJoyXVal < 0) {
-      targetJoyXVal *= backwardPower;
-    }
     joyXVal = safeAcceleration(targetJoyXVal, joyXVal, motorLoopTime*accelerationPerMs);
     
     rawJoyYVal = analogRead(joyStickYPin);
     targetJoyYVal = 2.0/1023.0 * rawJoyYVal -1;
     targetJoyYVal = correctForDeadzone(targetJoyYVal, deadzone);
+    if (targetJoyXVal < 0) {
+      targetJoyXVal *= backwardPower;
+    }
     joyYVal = safeAcceleration(targetJoyYVal, joyYVal, motorLoopTime*accelerationPerMs);
    
     // Cheesy drive logic
