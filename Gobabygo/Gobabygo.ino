@@ -93,8 +93,8 @@ void loop() {
     rawJoyYVal = analogRead(joyStickYPin);
     targetJoyYVal = 2.0/1023.0 * rawJoyYVal -1;
     targetJoyYVal = correctForDeadzone(targetJoyYVal, deadzone);
-    if (targetJoyXVal < 0) {
-      targetJoyXVal *= backwardPower;
+    if (targetJoyYVal < 0) {
+      targetJoyYVal *= backwardPower;
     }
     joyYVal = safeAcceleration(targetJoyYVal, joyYVal, motorLoopTime*accelerationPerMs);
    
